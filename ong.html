@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Voluntários - ONG de Animais</title>
+
+  <style>
+    /* ====== ESTILO (CSS) ====== */
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f7f2;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1, h2 { color: #2e7d32; }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Grade: 2 colunas no computador, 1 no celular */
+    .grade {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .grade { grid-template-columns: 1fr; }
+    }
+
+    .campo { display: flex; flex-direction: column; }
+
+    label { font-weight: bold; margin-bottom: 4px; font-size: 14px; }
+
+    input, select {
+      padding: 8px;
+      border: 1px solid #bbb;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus { outline: 2px solid #66bb6a; }
+
+    .erro { color: #c62828; font-size: 12px; min-height: 14px; margin-top: 3px; }
+
+    .botoes { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .btn-salvar   { background: #2e7d32; }
+    .btn-cancelar { background: #757575; }
+    .btn-editar   { background: #1976d2; padding: 6px 10px; }
+    .btn-excluir  { background: #c62828; padding: 6px 10px; }
+
+    /* Tabela */
+    .tabela-wrapper { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+    th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+
+    th { background: #e8f5e9; }
+
+    .vazio { text-align: center; color: #888; padding: 20px; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🐾 ONG de Animais - Cadastro de Voluntários</h1>
+
+    <!-- ====== FORMULÁRIO (CREATE / UPDATE) ====== -->
+    <div class="card">
+      <h2 id="tituloForm">Novo cadastro</h2>
+
+      <form id="formulario" novalidate>
+        <div class="grade">
+
+          <div class="campo">
+            <label for="nome">Nome *</label>
+            <input type="text" id="nome" required>
+            <span class="erro" id="erro-nome"></span>
+          </div>
+
+          <div class="campo">
+            <label for="sobrenome">Sobrenome *</label>
+            <input type="text" id="sobrenome" required>
+            <span class="erro" id="erro-sobrenome"></span>
+          </div>
+
+          <div class="campo">
+            <label for="nascimento">Data de nascimento *</label>
+            <input type="date" id="nascimento" required>
+            <span class="erro" id="erro-nascimento"></span>
+          </div>
+
+          <div class="campo">
+            <label for="statusCivil">Status civil *</label>
+            <select id="statusCivil" required>
+              <option value="">Selecione...</option>
+              <option>Solteiro(a)</option>
+              <option>Casado(a)</option>
+              <option>União estável</option>
+              <option>Separado(a)</option>
+              <option>Divorciado(a)</option>
+              <option>Viúvo(a)</option>
+            </select>
+            <span class="erro" id="erro-statusCivil"></span>
+          </div>
+
+          <div class="campo">
+            <label for="cep">CEP *</label>
+            <input type="text" id="cep" placeholder="00000-000" maxlength="9" required>
+            <span class="erro" id="erro-cep"></span>
+          </div>
+
+          <div class="campo">
+            <label for="logradouro">Logradouro *</label>
+            <input type="text" id="logradouro" required>
+            <span class="erro" id="erro-logradouro"></span>
+          </div>
+
+          <div class="campo">
+            <label for="numero">Número *</label>
+            <input type="text" id="numero" required>
+            <span class="erro" id="erro-numero"></span>
+          </div>
+
+          <div class="campo">
+            <label for="bairro">Bairro *</label>
+            <input type="text" id="bairro" required>
+            <span class="erro" id="erro-bairro"></span>
+          </div>
+
+          <div class="campo">
+            <label for="cidade">Cidade *</label>
+            <input type="text" id="cidade" required>
+            <span class="erro" id="erro-cidade"></span>
+          </div>
+
+          <div class="campo">
+            <label for="estado">Estado *</label>
+            <select id="estado" required>
+              <option value="">Selecione...</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+              <option>SP</option><option>SE</option><option>TO</option>
+            </select>
+            <span class="erro" id="erro-estado"></span>
+          </div>
+
+          <div class="campo">
+            <label for="pais">País *</label>
+            <input type="text" id="pais" value="Brasil" required>
+            <span class="erro" id="erro-pais"></span>
+          </div>
+
+          <div class="campo">
+            <label for="rg">RG *</label>
+            <input type="text" id="rg" maxlength="12" required>
+            <span class="erro" id="erro-rg"></span>
+          </div>
+
+          <div class="campo">
+            <label for="cpf">CPF *</label>
+            <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" required>
+            <span class="erro" id="erro-cpf"></span>
+          </div>
+
+          <div class="campo">
+            <label for="passaporte">Passaporte (opcional)</label>
+            <input type="text" id="passaporte" maxlength="9">
+            <span class="erro" id="erro-passaporte"></span>
+          </div>
+
+          <div class="campo">
+            <label for="telefone">Telefone *</label>
+            <input type="text" id="telefone" placeholder="(11) 91234-5678" maxlength="15" required>
+            <span class="erro" id="erro-telefone"></span>
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail *</label>
+            <input type="email" id="email" required>
+            <span class="erro" id="erro-email"></span>
+          </div>
+
+        </div>
+
+        <div class="botoes">
+          <button type="submit" class="btn-salvar" id="btnSalvar">Cadastrar</button>
+          <button type="button" class="btn-cancelar" id="btnCancelar">Limpar / Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ====== LISTA (READ / DELETE) ====== -->
+    <div class="card">
+      <h2>Cadastros realizados</h2>
+      <div class="tabela-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th>Cidade/UF</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabela"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ====== JAVASCRIPT ======
+       CRUD = Create (criar), Read (ler), Update (atualizar), Delete (excluir).
+       Os dados ficam salvos no localStorage do navegador (não precisa de servidor). */
+
+    const CHAVE = "ong_animais_cadastros";
+
+    // Lista de cadastros (carrega do localStorage ou começa vazia)
+    let cadastros = JSON.parse(localStorage.getItem(CHAVE)) || [];
+
+    // Guarda o id do cadastro que está sendo editado (null = cadastro novo)
+    let idEdicao = null;
+
+    // Lista dos campos do formulário (mesmos ids do HTML)
+    const campos = [
+      "nome", "sobrenome", "nascimento", "statusCivil", "cep", "logradouro",
+      "numero", "bairro", "cidade", "estado", "pais", "rg", "cpf",
+      "passaporte", "telefone", "email"
+    ];
+
+    // Atalho para pegar elemento pelo id
+    const $ = (id) => document.getElementById(id);
+
+    /* ---------- Salvar no navegador ---------- */
+    function salvarNoStorage() {
+      localStorage.setItem(CHAVE, JSON.stringify(cadastros));
+    }
+
+    /* ---------- Máscaras (formatam enquanto digita) ---------- */
+    function soNumeros(texto) {
+      return texto.replace(/\D/g, "");
+    }
+
+    $("cpf").addEventListener("input", (e) => {
+      let v = soNumeros(e.target.value).slice(0, 11);
+      v = v.replace(/(\d{3})(\d)/, "$1.$2");
+      v = v.replace(/(\d{3})(\d)/, "$1.$2");
+      v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+      e.target.value = v;
+    });
+
+    $("cep").addEventListener("input", (e) => {
+      let v = soNumeros(e.target.value).slice(0, 8);
+      v = v.replace(/(\d{5})(\d)/, "$1-$2");
+      e.target.value = v;
+    });
+
+    $("telefone").addEventListener("input", (e) => {
+      let v = soNumeros(e.target.value).slice(0, 11);
+      v = v.replace(/(\d{2})(\d)/, "($1) $2");
+      v = v.replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+      e.target.value = v;
+    });
+
+    /* ---------- Busca automática de endereço pelo CEP (API ViaCEP) ---------- */
+    $("cep").addEventListener("blur", async () => {
+      const cep = soNumeros($("cep").value);
+      if (cep.length !== 8) return;
+
+      try {
+        const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const dados = await resposta.json();
+
+        if (dados.erro) {
+          mostrarErro("cep", "CEP não encontrado.");
+          return;
+        }
+        mostrarErro("cep", "");
+        $("logradouro").value = dados.logradouro;
+        $("bairro").value = dados.bairro;
+        $("cidade").value = dados.localidade;
+        $("estado").value = dados.uf;
+      } catch (erro) {
+        // Se estiver sem internet, o usuário preenche manualmente
+        console.log("Não foi possível consultar o CEP.", erro);
+      }
+    });
+
+    /* ---------- Validações ---------- */
+    function validarCPF(cpf) {
+      cpf = soNumeros(cpf);
+      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+      // Calcula os 2 dígitos verificadores
+      for (let t = 9; t < 11; t++) {
+        let soma = 0;
+        for (let i = 0; i < t; i++) {
+          soma += Number(cpf[i]) * (t + 1 - i);
+        }
+        const digito = ((soma * 10) % 11) % 10;
+        if (digito !== Number(cpf[t])) return false;
+      }
+      return true;
+    }
+
+    function validarEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function mostrarErro(campo, mensagem) {
+      $("erro-" + campo).textContent = mensagem;
+    }
+
+    // Retorna true se tudo estiver certo
+    function validarFormulario() {
+      let valido = true;
+
+      // Limpa erros antigos
+      campos.forEach((c) => mostrarErro(c, ""));
+
+      // Campos obrigatórios (todos, menos passaporte)
+      campos.forEach((c) => {
+        if (c !== "passaporte" && $(c).value.trim() === "") {
+          mostrarErro(c, "Campo obrigatório.");
+          valido = false;
+        }
+      });
+
+      // Validações específicas (só se o campo foi preenchido)
+      if ($("cpf").value && !validarCPF($("cpf").value)) {
+        mostrarErro("cpf", "CPF inválido.");
+        valido = false;
+      }
+
+      if ($("email").value && !validarEmail($("email").value)) {
+        mostrarErro("email", "E-mail inválido.");
+        valido = false;
+      }
+
+      if ($("cep").value && soNumeros($("cep").value).length !== 8) {
+        mostrarErro("cep", "CEP deve ter 8 números.");
+        valido = false;
+      }
+
+      if ($("telefone").value && soNumeros($("telefone").value).length < 10) {
+        mostrarErro("telefone", "Telefone incompleto.");
+        valido = false;
+      }
+
+      if ($("nascimento").value) {
+        const nasc = new Date($("nascimento").value);
+        if (nasc > new Date()) {
+          mostrarErro("nascimento", "Data não pode ser no futuro.");
+          valido = false;
+        }
+      }
+
+      // CPF repetido (não deixa cadastrar duas vezes a mesma pessoa)
+      const cpfDigitado = soNumeros($("cpf").value);
+      const repetido = cadastros.some(
+        (p) => soNumeros(p.cpf) === cpfDigitado && p.id !== idEdicao
+      );
+      if (cpfDigitado && repetido) {
+        mostrarErro("cpf", "Este CPF já está cadastrado.");
+        valido = false;
+      }
+
+      return valido;
+    }
+
+    /* ---------- CREATE e UPDATE ---------- */
+    $("formulario").addEventListener("submit", (e) => {
+      e.preventDefault(); // impede a página de recarregar
+
+      if (!validarFormulario()) return;
+
+      // Monta um objeto com os valores de todos os campos
+      const pessoa = {};
+      campos.forEach((c) => {
+        pessoa[c] = $(c).value.trim();
+      });
+
+      if (idEdicao === null) {
+        // CREATE: novo cadastro
+        pessoa.id = Date.now(); // id único baseado na data/hora
+        cadastros.push(pessoa);
+        alert("Cadastro realizado com sucesso!");
+      } else {
+        // UPDATE: substitui o cadastro existente
+        pessoa.id = idEdicao;
+        const posicao = cadastros.findIndex((p) => p.id === idEdicao);
+        cadastros[posicao] = pessoa;
+        alert("Cadastro atualizado com sucesso!");
+      }
+
+      salvarNoStorage();
+      limparFormulario();
+      renderizarTabela();
+    });
+
+    /* ---------- READ: mostra a tabela ---------- */
+    function renderizarTabela() {
+      const corpo = $("corpoTabela");
+      corpo.innerHTML = "";
+
+      if (cadastros.length === 0) {
+        corpo.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum cadastro ainda.</td></tr>';
+        return;
+      }
+
+      cadastros.forEach((p) => {
+        const linha = document.createElement("tr");
+
+        // textContent evita que código malicioso digitado seja executado
+        const valores = [
+          p.nome + " " + p.sobrenome,
+          p.cpf,
+          p.telefone,
+          p.email,
+          p.cidade + "/" + p.estado
+        ];
+        valores.forEach((valor) => {
+          const td = document.createElement("td");
+          td.textContent = valor;
+          linha.appendChild(td);
+        });
+
+        // Coluna de ações
+        const tdAcoes = document.createElement("td");
+
+        const btnEditar = document.createElement("button");
+        btnEditar.textContent = "Editar";
+        btnEditar.className = "btn-editar";
+        btnEditar.onclick = () => editar(p.id);
+
+        const btnExcluir = document.createElement("button");
+        btnExcluir.textContent = "Excluir";
+        btnExcluir.className = "btn-excluir";
+        btnExcluir.onclick = () => excluir(p.id);
+
+        tdAcoes.appendChild(btnEditar);
+        tdAcoes.appendChild(document.createTextNode(" "));
+        tdAcoes.appendChild(btnExcluir);
+        linha.appendChild(tdAcoes);
+
+        corpo.appendChild(linha);
+      });
+    }
+
+    /* ---------- Carrega os dados no formulário para editar ---------- */
+    function editar(id) {
+      const pessoa = cadastros.find((p) => p.id === id);
+      if (!pessoa) return;
+
+      campos.forEach((c) => {
+        $(c).value = pessoa[c];
+      });
+
+      idEdicao = id;
+      $("tituloForm").textContent = "Editando cadastro";
+      $("btnSalvar").textContent = "Salvar alterações";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    /* ---------- DELETE ---------- */
+    function excluir(id) {
+      if (!confirm("Tem certeza que deseja excluir este cadastro?")) return;
+
+      cadastros = cadastros.filter((p) => p.id !== id);
+      salvarNoStorage();
+
+      // Se estava editando justamente esse cadastro, limpa o formulário
+      if (idEdicao === id) limparFormulario();
+      renderizarTabela();
+    }
+
+    /* ---------- Limpar formulário ---------- */
+    function limparFormulario() {
+      $("formulario").reset();
+      campos.forEach((c) => mostrarErro(c, ""));
+      idEdicao = null;
+      $("tituloForm").textContent = "Novo cadastro";
+      $("btnSalvar").textContent = "Cadastrar";
+    }
+
+    $("btnCancelar").addEventListener("click", limparFormulario);
+
+    // Mostra a tabela assim que a página abre
+    renderizarTabela();
+  </script>
+</body>
+</html>
