@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Pet - ONG Pet Perdido</title>
+  <link rel="stylesheet" href="styleong.css">
+</head>
+
+<body>
+
+  <div id="logo">
+    <img src="logo.png" alt="Logo">
+</div>
+    
+  <div class="container">
+    <h1>🐾 Pet Perdido - Cadastro de Animais</h1>
+
+    <!-- ====== FORMULÁRIO (CREATE / UPDATE) ====== -->
+    <div class="card">
+      <h2 id="tituloForm">Novo cadastro</h2>
+
+      <form id="formulario" novalidate>
+        <div class="grade">
+
+          <div class="campo">
+            <label for="nome">Nome *</label>
+            <input type="text" id="nome" required>
+            <span class="erro" id="erro-nome"></span>
+          </div>
+
+          <div class="campo">
+            <label for="sobrenome">Sobrenome</label>
+            <input type="text" id="sobrenome">
+            <span class="erro" id="erro-sobrenome"></span>
+          </div>
+
+          <div class="campo">
+            <label for="nascimento">Ano de nascimento *</label>
+            <input type="date" id="nascimento" required>
+            <span class="erro" id="erro-nascimento"></span>
+          </div>
+
+          <div class="campo">
+            <label for="especie">Espécie *</label>
+            <select id="especie" required>
+              <option value="">Selecione...</option>
+              <option>Cachorro</option>
+              <option>Gato</option>
+              <option>Pássaro</option>
+              <option>Réptil</option>
+            </select>
+            <span class="erro" id="erro-especie"></span>
+          </div>
+
+          <div class="campo">
+            <label for="cep">CEP *</label>
+            <input type="text" id="cep" placeholder="00000-000" maxlength="9" required>
+            <span class="erro" id="erro-cep"></span>
+          </div>
+
+          <div class="campo">
+            <label for="cidade">Cidade *</label>
+            <input type="text" id="cidade" required>
+            <span class="erro" id="erro-cidade"></span>
+          </div>
+
+          <div class="campo">
+            <label for="estado">Estado *</label>
+            <select id="estado" required>
+              <option value="">Selecione...</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+              <option>SP</option><option>SE</option><option>TO</option>
+            </select>
+            <span class="erro" id="erro-estado"></span>
+          </div>
+
+          <div class="campo">
+            <label for="pais">País *</label>
+            <input type="text" id="pais" value="Brasil" required>
+            <span class="erro" id="erro-pais"></span>
+          </div>
+
+          <div class="campo">
+            <label for="pedigree">Pedigree? *</label>
+            <select id="pedigree" required>
+              <option value="">Selecione...</option>
+              <option>Sim</option>
+              <option>Não</option>
+            </select>
+            <span class="erro" id="erro-pedigree"></span>
+          </div>
+
+          <div class="campo">
+            <label for="vacina">Vacinado? *</label>
+            <select id="vacina" required>
+              <option value="">Selecione...</option>
+              <option>Sim</option>
+              <option>Não</option>
+            </select>
+            <span class="erro" id="erro-vacina"></span>
+          </div>
+
+          <div class="campo">
+            <label for="telefone">Telefone *</label>
+            <input type="text" id="telefone" placeholder="(11) 91234-5678" maxlength="15" required>
+            <span class="erro" id="erro-telefone"></span>
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail do Responsável *</label>
+            <input type="email" id="email" required>
+            <span class="erro" id="erro-email"></span>
+          </div>
+
+        </div>
+
+        <div class="botoes">
+          <button type="submit" class="btn-salvar" id="btnSalvar">Cadastrar</button>
+          <button type="button" class="btn-cancelar" id="btnCancelar">Limpar / Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ====== LISTA (READ / DELETE) ====== -->
+    <div class="card">
+      <h2>Cadastros realizados</h2>
+      <div class="tabela-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Espécie</th>
+              <th>Vacinado</th>
+              <th>Pedigree</th>
+              <th>Telefone</th>
+              <th>E-mail do Responsável</th>
+              <th>Cidade/UF</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabela"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CRUD do cadastro de animais
+    const CHAVE = "ong_animais_cadastros_animais";
+
+    // Carrega os dados com segurança.
+    let cadastros = [];
+    try {
+      cadastros = JSON.parse(localStorage.getItem(CHAVE)) || [];
+      if (!Array.isArray(cadastros)) cadastros = [];
+    } catch (erro) {
+      console.error("Não foi possível ler os cadastros salvos:", erro);
+      cadastros = [];
+    }
+
+    let idEdicao = null;
+
+    const campos = [
+      "nome", "sobrenome", "nascimento", "especie", "cep",
+      "cidade", "estado", "pais", "pedigree", "vacina",
+      "telefone", "email"
+    ];
+
+    const camposObrigatorios = [
+      "nome", "nascimento", "especie", "cep", "cidade", "estado",
+      "pais", "pedigree", "vacina", "telefone", "email"
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    function salvarNoStorage() {
+      try {
+        localStorage.setItem(CHAVE, JSON.stringify(cadastros));
+        return true;
+      } catch (erro) {
+        console.error("Não foi possível salvar os cadastros:", erro);
+        alert("Não foi possível salvar os dados neste navegador. Verifique as configurações de armazenamento.");
+        return false;
+      }
+    }
+
+    function soNumeros(texto) {
+      return texto.replace(/\D/g, "");
+    }
+
+    function mostrarErro(campo, mensagem) {
+      const elementoErro = $("erro-" + campo);
+      if (elementoErro) elementoErro.textContent = mensagem;
+    }
+
+    // Máscara do CEP.
+    $("cep").addEventListener("input", (e) => {
+      let valor = soNumeros(e.target.value).slice(0, 8);
+      valor = valor.replace(/(\d{5})(\d)/, "$1-$2");
+      e.target.value = valor;
+    });
+
+    // Máscara do telefone.
+    $("telefone").addEventListener("input", (e) => {
+      let valor = soNumeros(e.target.value).slice(0, 11);
+      valor = valor.replace(/(\d{2})(\d)/, "($1) $2");
+      valor = valor.replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+      e.target.value = valor;
+    });
+
+    // Busca a cidade e o estado pelo CEP.
+    $("cep").addEventListener("blur", async () => {
+      const cep = soNumeros($("cep").value);
+      if (cep.length !== 8) return;
+
+      try {
+        const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        if (!resposta.ok) throw new Error("Falha na consulta do CEP");
+
+        const dados = await resposta.json();
+
+        if (dados.erro) {
+          mostrarErro("cep", "CEP não encontrado.");
+          return;
+        }
+
+        mostrarErro("cep", "");
+        $("cidade").value = dados.localidade || "";
+        $("estado").value = dados.uf || "";
+      } catch (erro) {
+        console.log("Não foi possível consultar o CEP. Preencha cidade e estado manualmente.", erro);
+      }
+    });
+
+    function validarEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validarFormulario() {
+      let valido = true;
+
+      campos.forEach((campo) => mostrarErro(campo, ""));
+
+      camposObrigatorios.forEach((campo) => {
+        if ($(campo).value.trim() === "") {
+          mostrarErro(campo, "Campo obrigatório.");
+          valido = false;
+        }
+      });
+
+      if ($("email").value && !validarEmail($("email").value.trim())) {
+        mostrarErro("email", "E-mail inválido.");
+        valido = false;
+      }
+
+      if ($("cep").value && soNumeros($("cep").value).length !== 8) {
+        mostrarErro("cep", "CEP deve ter 8 números.");
+        valido = false;
+      }
+
+      if ($("telefone").value && soNumeros($("telefone").value).length < 10) {
+        mostrarErro("telefone", "Telefone incompleto.");
+        valido = false;
+      }
+
+      if ($("nascimento").value) {
+        const nascimento = new Date($("nascimento").value + "T00:00:00");
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        if (nascimento > hoje) {
+          mostrarErro("nascimento", "Data não pode ser no futuro.");
+          valido = false;
+        }
+      }
+
+      return valido;
+    }
+
+    // CREATE e UPDATE.
+    $("formulario").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      if (!validarFormulario()) {
+        alert("Preencha corretamente os campos obrigatórios.");
+        return;
+      }
+
+      const animal = {};
+      campos.forEach((campo) => {
+        animal[campo] = $(campo).value.trim();
+      });
+
+      if (idEdicao === null) {
+        animal.id = Date.now();
+        cadastros.push(animal);
+      } else {
+        animal.id = idEdicao;
+        const posicao = cadastros.findIndex((item) => item.id === idEdicao);
+
+        if (posicao === -1) {
+          alert("Não foi possível encontrar o cadastro para atualizar.");
+          return;
+        }
+
+        cadastros[posicao] = animal;
+      }
+
+      if (!salvarNoStorage()) return;
+
+      const mensagem = idEdicao === null
+        ? "Cadastro realizado com sucesso!"
+        : "Cadastro atualizado com sucesso!";
+
+      renderizarTabela();
+      limparFormulario();
+      alert(mensagem);
+    });
+
+    // READ: exibe os animais cadastrados.
+    function renderizarTabela() {
+      const corpo = $("corpoTabela");
+      corpo.innerHTML = "";
+
+      if (cadastros.length === 0) {
+        corpo.innerHTML = '<tr><td colspan="8" class="vazio">Nenhum cadastro ainda.</td></tr>';
+        return;
+      }
+
+      cadastros.forEach((animal) => {
+        const linha = document.createElement("tr");
+
+        const valores = [
+          [animal.nome, animal.sobrenome].filter(Boolean).join(" "),
+          animal.especie,
+          animal.vacina,
+          animal.pedigree,
+          animal.telefone,
+          animal.email,
+          (animal.cidade || "") + "/" + (animal.estado || "")
+        ];
+
+        valores.forEach((valor) => {
+          const td = document.createElement("td");
+          td.textContent = valor || "-";
+          linha.appendChild(td);
+        });
+
+        const tdAcoes = document.createElement("td");
+
+        const btnEditar = document.createElement("button");
+        btnEditar.type = "button";
+        btnEditar.textContent = "Editar";
+        btnEditar.className = "btn-editar";
+        btnEditar.onclick = () => editar(animal.id);
+
+        const btnExcluir = document.createElement("button");
+        btnExcluir.type = "button";
+        btnExcluir.textContent = "Excluir";
+        btnExcluir.className = "btn-excluir";
+        btnExcluir.onclick = () => excluir(animal.id);
+
+        tdAcoes.appendChild(btnEditar);
+        tdAcoes.appendChild(document.createTextNode(" "));
+        tdAcoes.appendChild(btnExcluir);
+        linha.appendChild(tdAcoes);
+        corpo.appendChild(linha);
+      });
+    }
+
+    // UPDATE: carrega os dados no formulário.
+    function editar(id) {
+      const animal = cadastros.find((item) => item.id === id);
+      if (!animal) return;
+
+      campos.forEach((campo) => {
+        $(campo).value = animal[campo] || "";
+      });
+
+      idEdicao = id;
+      $("tituloForm").textContent = "Editando cadastro";
+      $("btnSalvar").textContent = "Salvar alterações";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // DELETE: exclui um cadastro.
+    function excluir(id) {
+      if (!confirm("Tem certeza que deseja excluir este cadastro?")) return;
+
+      cadastros = cadastros.filter((animal) => animal.id !== id);
+
+      if (!salvarNoStorage()) return;
+
+      if (idEdicao === id) limparFormulario();
+      renderizarTabela();
+    }
+
+    // Limpa o formulário.
+    function limparFormulario() {
+      $("formulario").reset();
+      campos.forEach((campo) => mostrarErro(campo, ""));
+      idEdicao = null;
+      $("tituloForm").textContent = "Novo cadastro";
+      $("btnSalvar").textContent = "Cadastrar";
+    }
+
+    $("btnCancelar").addEventListener("click", limparFormulario);
+
+    // Mostra os registros ao abrir a página.
+    renderizarTabela();
+  </script>
+</body>
+</html>

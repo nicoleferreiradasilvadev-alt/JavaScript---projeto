@@ -1,0 +1,106 @@
+ * { box-sizing: border-box; }
+
+body {
+      margin: 0;
+      padding: 20px;
+      background: #df5e27;
+      color: #221f20;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+
+    h1 { 
+      color: #000000; 
+    }
+
+    h2 {
+      color: #221f20;
+      margin-top: 0;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #ffd998;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Grade: 2 colunas no computador, 1 no celular */
+    .grade {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .grade { grid-template-columns: 1fr; }
+    }
+
+    .campo { display: flex; flex-direction: column; }
+
+    label { font-weight: bold; margin-bottom: 4px; font-size: 14px; }
+
+    input, select {
+      padding: 8px;
+      border: 1px solid #bbb;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    input:focus, select:focus { outline: 2px solid #A14C3F; }
+
+    .erro { color: #c62828; font-size: 12px; min-height: 14px; margin-top: 3px; }
+
+    .botoes { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .btn-salvar   { background: #D1B03F; }
+    .btn-cancelar { background: #757575; }
+    .btn-editar   { background: #F29F68; padding: 6px 10px; }
+    .btn-excluir  { background: #c62828; padding: 6px 10px; }
+
+    /* Tabela */
+    .tabela-wrapper { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+    th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+
+    th { background: #e8f5e9; }
+
+    .vazio { text-align: center; color: #888; padding: 20px; }
+
+    th {
+      background: #a63a0c;
+      color: #fff6ba;
+    }
+
+    td {
+      background: #F2F2F2;
+    }
+
+    #logo {
+    float: left;
+    margin: 0px;
+  }
+
+  #logo img {
+    display: block;
+    height: 200px;
+    width: 200px;
+    border-radius: 50%;
+    position: fixed;
+  }
