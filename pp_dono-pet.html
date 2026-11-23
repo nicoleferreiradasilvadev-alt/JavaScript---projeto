@@ -11,8 +11,8 @@
 
   <div id="logo">
     <img src="logo.png" alt="logo">
-</div>
-    
+  </div>
+
   <div class="container">
     <h1>🐾 Pet Perdido - Dono</h1>
 
@@ -41,7 +41,7 @@
             <span class="erro" id="erro-nascimento"></span>
           </div>
 
-           <div class="campo">
+          <div class="campo">
             <label for="statusCivil">Status civil *</label>
             <select id="statusCivil" required>
               <option value="">Selecione...</option>
@@ -88,7 +88,7 @@
             <span class="erro" id="erro-pais"></span>
           </div>
 
-           <div class="campo">
+          <div class="campo">
             <label for="rg">RG *</label>
             <input type="text" id="rg" maxlength="12" required>
             <span class="erro" id="erro-rg"></span>
@@ -149,17 +149,16 @@
     </div>
   </div>
 
-   <div id="button-dono">
+  <div id="button-dono">
     <a href="pp_cad-pet.html">
-      <img src="cad-pet.png">
+      <img src="cad-pet.png" alt="Cadastrar pet">
     </a>
   </div>
 
   <script>
-    // CRUD do cadastro de animais
-    const CHAVE = "ong_animais_cadastros_animais";
+    // CRUD do cadastro de donos
+    const CHAVE = "ong_animais_cadastros_donos";
 
-    // Carrega os dados com segurança.
     let cadastros = [];
     try {
       cadastros = JSON.parse(localStorage.getItem(CHAVE)) || [];
@@ -172,14 +171,14 @@
     let idEdicao = null;
 
     const campos = [
-      "nome", "sobrenome", "nascimento", "especie", "cep",
-      "cidade", "estado", "pais", "pedigree", "vacina",
+      "nome", "sobrenome", "nascimento", "statusCivil", "cep",
+      "cidade", "estado", "pais", "rg", "cpf", "passaporte",
       "telefone", "email"
     ];
 
     const camposObrigatorios = [
-      "nome", "nascimento", "especie", "cep", "cidade", "estado",
-      "pais", "pedigree", "vacina", "telefone", "email"
+      "nome", "nascimento", "statusCivil", "cep", "cidade",
+      "estado", "pais", "rg", "cpf", "telefone", "email"
     ];
 
     const $ = (id) => document.getElementById(id);
@@ -208,6 +207,15 @@
     $("cep").addEventListener("input", (e) => {
       let valor = soNumeros(e.target.value).slice(0, 8);
       valor = valor.replace(/(\d{5})(\d)/, "$1-$2");
+      e.target.value = valor;
+    });
+
+    // Máscara do CPF.
+    $("cpf").addEventListener("input", (e) => {
+      let valor = soNumeros(e.target.value).slice(0, 11);
+      valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+      valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+      valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
       e.target.value = valor;
     });
 
@@ -247,6 +255,20 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
+    // Validação dos dígitos verificadores do CPF.
+    function validarCPF(cpf) {
+      cpf = soNumeros(cpf);
+      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+      for (let t = 9; t < 11; t++) {
+        let soma = 0;
+        for (let i = 0; i < t; i++) soma += Number(cpf[i]) * (t + 1 - i);
+        const digito = ((soma * 10) % 11) % 10;
+        if (digito !== Number(cpf[t])) return false;
+      }
+      return true;
+    }
+
     function validarFormulario() {
       let valido = true;
 
@@ -266,6 +288,21 @@
 
       if ($("cep").value && soNumeros($("cep").value).length !== 8) {
         mostrarErro("cep", "CEP deve ter 8 números.");
+        valido = false;
+      }
+
+      if ($("cpf").value && !validarCPF($("cpf").value)) {
+        mostrarErro("cpf", "CPF inválido.");
+        valido = false;
+      }
+
+      if ($("rg").value && soNumeros($("rg").value).length < 5) {
+        mostrarErro("rg", "RG incompleto.");
+        valido = false;
+      }
+
+      if ($("passaporte").value && !/^[A-Za-z0-9]{6,9}$/.test($("passaporte").value.trim())) {
+        mostrarErro("passaporte", "Passaporte deve ter de 6 a 9 letras/números.");
         valido = false;
       }
 
@@ -297,16 +334,25 @@
         return;
       }
 
-      const animal = {};
+      const dono = {};
       campos.forEach((campo) => {
-        animal[campo] = $(campo).value.trim();
+        dono[campo] = $(campo).value.trim();
       });
 
+      // Impede CPF duplicado (ignora o próprio cadastro em edição).
+      const duplicado = cadastros.some(
+        (item) => item.cpf === dono.cpf && item.id !== idEdicao
+      );
+      if (duplicado) {
+        mostrarErro("cpf", "Já existe um cadastro com este CPF.");
+        return;
+      }
+
       if (idEdicao === null) {
-        animal.id = Date.now();
-        cadastros.push(animal);
+        dono.id = Date.now();
+        cadastros.push(dono);
       } else {
-        animal.id = idEdicao;
+        dono.id = idEdicao;
         const posicao = cadastros.findIndex((item) => item.id === idEdicao);
 
         if (posicao === -1) {
@@ -314,7 +360,7 @@
           return;
         }
 
-        cadastros[posicao] = animal;
+        cadastros[posicao] = dono;
       }
 
       if (!salvarNoStorage()) return;
@@ -328,27 +374,27 @@
       alert(mensagem);
     });
 
-    // READ: exibe os animais cadastrados.
+    // READ: exibe os donos cadastrados.
     function renderizarTabela() {
       const corpo = $("corpoTabela");
       corpo.innerHTML = "";
 
       if (cadastros.length === 0) {
-        corpo.innerHTML = '<tr><td colspan="8" class="vazio">Nenhum cadastro ainda.</td></tr>';
+        corpo.innerHTML = '<tr><td colspan="7" class="vazio">Nenhum cadastro ainda.</td></tr>';
         return;
       }
 
-      cadastros.forEach((animal) => {
+      cadastros.forEach((dono) => {
         const linha = document.createElement("tr");
 
+        // Mesma ordem do <thead>: Nome, Sobrenome, CPF, Telefone, E-mail, Cidade/UF
         const valores = [
-          [animal.nome, animal.sobrenome].filter(Boolean).join(" "),
-          animal.especie,
-          animal.vacina,
-          animal.pedigree,
-          animal.telefone,
-          animal.email,
-          (animal.cidade || "") + "/" + (animal.estado || "")
+          dono.nome,
+          dono.sobrenome,
+          dono.cpf,
+          dono.telefone,
+          dono.email,
+          (dono.cidade || "") + "/" + (dono.estado || "")
         ];
 
         valores.forEach((valor) => {
@@ -363,13 +409,13 @@
         btnEditar.type = "button";
         btnEditar.textContent = "Editar";
         btnEditar.className = "btn-editar";
-        btnEditar.onclick = () => editar(animal.id);
+        btnEditar.onclick = () => editar(dono.id);
 
         const btnExcluir = document.createElement("button");
         btnExcluir.type = "button";
         btnExcluir.textContent = "Excluir";
         btnExcluir.className = "btn-excluir";
-        btnExcluir.onclick = () => excluir(animal.id);
+        btnExcluir.onclick = () => excluir(dono.id);
 
         tdAcoes.appendChild(btnEditar);
         tdAcoes.appendChild(document.createTextNode(" "));
@@ -381,11 +427,11 @@
 
     // UPDATE: carrega os dados no formulário.
     function editar(id) {
-      const animal = cadastros.find((item) => item.id === id);
-      if (!animal) return;
+      const dono = cadastros.find((item) => item.id === id);
+      if (!dono) return;
 
       campos.forEach((campo) => {
-        $(campo).value = animal[campo] || "";
+        $(campo).value = dono[campo] || "";
       });
 
       idEdicao = id;
@@ -398,7 +444,7 @@
     function excluir(id) {
       if (!confirm("Tem certeza que deseja excluir este cadastro?")) return;
 
-      cadastros = cadastros.filter((animal) => animal.id !== id);
+      cadastros = cadastros.filter((dono) => dono.id !== id);
 
       if (!salvarNoStorage()) return;
 
