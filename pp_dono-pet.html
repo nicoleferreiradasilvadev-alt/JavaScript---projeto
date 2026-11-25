@@ -37,7 +37,7 @@
 
           <div class="campo">
             <label for="nascimento">Data de nascimento *</label>
-            <input type="date" id="nascimento" required>
+            <input type="date" id="nascimento" min="1900-01-01" required>
             <span class="erro" id="erro-nascimento"></span>
           </div>
 
@@ -181,7 +181,19 @@
       "estado", "pais", "rg", "cpf", "telefone", "email"
     ];
 
+    // Menor data de nascimento aceita.
+    const DATA_MINIMA = "1900-01-01";
+
     const $ = (id) => document.getElementById(id);
+
+    // Converte uma data para "AAAA-MM-DD" usando o fuso local
+    // (toISOString() usa UTC e poderia devolver o dia seguinte à noite).
+    function dataLocalISO(data) {
+      const ano = data.getFullYear();
+      const mes = String(data.getMonth() + 1).padStart(2, "0");
+      const dia = String(data.getDate()).padStart(2, "0");
+      return `${ano}-${mes}-${dia}`;
+    }
 
     function salvarNoStorage() {
       try {
@@ -313,11 +325,18 @@
 
       if ($("nascimento").value) {
         const nascimento = new Date($("nascimento").value + "T00:00:00");
+        const minima = new Date(DATA_MINIMA + "T00:00:00");
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
 
-        if (nascimento > hoje) {
+        if (isNaN(nascimento.getTime())) {
+          mostrarErro("nascimento", "Data inválida.");
+          valido = false;
+        } else if (nascimento > hoje) {
           mostrarErro("nascimento", "Data não pode ser no futuro.");
+          valido = false;
+        } else if (nascimento < minima) {
+          mostrarErro("nascimento", "Data inválida. Informe uma data a partir de 01/01/1900.");
           valido = false;
         }
       }
@@ -462,6 +481,9 @@
     }
 
     $("btnCancelar").addEventListener("click", limparFormulario);
+
+    // Impede escolher datas futuras no seletor de data.
+    $("nascimento").max = dataLocalISO(new Date());
 
     // Mostra os registros ao abrir a página.
     renderizarTabela();
